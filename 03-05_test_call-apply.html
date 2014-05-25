@@ -1,0 +1,49 @@
+<html>
+	<head>
+		<title>Test Suite</title>
+		<style type="text/css">
+		#results li.pass {
+			color: green;
+		}
+		#results li.fail {
+			color: red;
+      text-decoration: line-through;
+		}
+		</style>
+	</head>
+	<body>
+		<ui id="results"></ui>
+
+
+    <script src="lib/sweettea.js" type="text/javascript"></script>
+    <script>
+      //'use strict';  // Accessing arguments.callee is not allowed in strict mode.
+
+      function juggle() {
+        label("|--- The current context of juggle()  ---|");
+        report("The name of juggle() is %1", {'%1': arguments.callee.toString().match(/function ([^\(]+)/)[1]});
+        report("The this of juggle() is %1", {'%1': this});
+        report("The arguments of juggle() is %1", {'%1': arguments});
+        report("The type of arguments of juggle() is %1", {'%1': typeof arguments});
+        assertFalse(this === window, "The this of juggle() is not window");
+
+        var result = 0;
+        var n = 0;
+        for (n=0; n < arguments.length; n++) {
+          result += arguments[n];
+        }
+        this.result = result;
+      }
+
+      var ninja1 = {};
+      var ninja2 = {};
+
+      juggle.apply(ninja1, [1, 2, 3, 4]);
+      juggle.call(ninja2, 5, 6, 7, 8);
+
+      assertEqual(ninja1.result, 10, "ninja1 juggle() called with apply()");
+      assertEqual(ninja2.result, 26, "ninja2 juggle() called with call()");
+
+    </script>
+	</body>
+</html>

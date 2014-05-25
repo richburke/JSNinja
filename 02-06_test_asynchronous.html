@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<title>Test Suite</title>
+		<script>
+		(function() {
+			var queue = [], paused = false, results;
+			var time = Date.now();
+
+			this.test = function(name, fn) {
+				queue.push(function() {
+					results = document.getElementById("results");
+					/*
+					 * I was wondering how this results variable is working.  What happens
+					 * is that the most recent value of results gets used in assert.  Then
+					 * it updates the variable results with what happens in assert().
+					 *
+					 * It's obvious to me now.
+					 */
+					results = assert(true, name).appendChild(document.createElement('ul'));
+					fn();
+				});
+				runTest();
+			};
+			this.pause = function() {
+				paused = true;
+			};
+			this.resume = function() {
+				paused = false;
+				setTimeout(runTest, 1);
+			};
+			this.assert = function assert(value, desc){
+				var li = document.createElement('li');
+				li.className = value ? 'pass' : 'fail';
+				li.appendChild(document.createTextNode(desc));
+				results.appendChild(li);
+				if (!value) {
+					li.parentNode.parentNode.className = 'fail';
+				}
+				return li;
+			};
+			function runTest() {
+				if (!paused && queue.length) {
+					(queue.shift())();
+					/*
+					 * The if statement below will only be true if pause() is not called
+					 * in the test group before the setTimeout/asynchronous functionality.
+					 */
+					if (!paused) {
+						resume();
+						console.log("Resume called runTest " + now());
+					}
+				}
+			}
+			this.now = function() {
+				return Date.now() - time;
+			}
+		})();
+
+		window.onload = function() {
+			test('Async Test #1', function() {
+				pause();
+				setTimeout(function() {
+					assert(true, "First test completed");
+					console.log("First test completed! " + now());
+					resume();
+					console.log("Resume called setTimeout 1 " + now());
+				}, 1000);
+			});
+			test('Sync Test #2', function() {
+				assert(true, "Second test completed");
+				console.log("Second test completed! " + now());
+			});
+			test('Async Test #3', function() {
+				pause();
+				setTimeout(function() {
+					assert(true, "Third test completed");
+					console.log("Third test completed! " + now());
+					resume();
+					console.log("Resume called setTimeout 2 " + now());
+				}, 1000);
+			});
+			test('Sync Test #4', function() {
+				assert(true, "Fourth test completed");
+				console.log("Fourth test completed! " + now());
+			});
+		};
+		</script>
+		<style type="text/css">
+		#results li.pass {
+			color: green;
+		}
+		#results li.fail {
+			color: red;
+		}
+		</style>
+	</head>
+	<body>
+		<ui id="results"></ui>
+	</body>
+</html>
